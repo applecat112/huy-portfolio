@@ -6,8 +6,13 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: "https://applecat112.github.io/huy-portfolio/" // thay bằng URL GitHub Pages của bạn
+}));
 app.use(express.json());
+
+console.log(process.env.DB_HOST);
+console.log(process.env.DB_PORT);
 
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -15,11 +20,11 @@ const db = mysql.createConnection({
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
-    connectTimeout: 60000
+    connectTimeout: 60000,
+    ssl: { rejectUnauthorized: false }
 });
 
 db.connect((err) => {
-
     if (err) {
         console.log(err);
     } else {
@@ -31,28 +36,36 @@ app.post("/contact", (req, res) => {
 
     const { name, email, message } = req.body;
 
+    if (!name || !email || !message) {
+        return res.status(400).json({
+            success: false,
+            error: "Vui lòng điền đầy đủ thông tin"
+        });
+    }
+
     const sql = `
         INSERT INTO contact_messages(name, email, message)
         VALUES (?, ?, ?)
     `;
 
     db.query(sql, [name, email, message], (err, result) => {
-
         if (err) {
-
             console.log(err);
-
             return res.status(500).json({
-                success: false
+                success: false,
+                error: "Lỗi server, vui lòng thử lại"
             });
         }
 
         res.json({
-            success: true
+            success: true,
+            message: "Gửi thành công!"
         });
     });
 });
 
-app.listen(3000, () => {
-    console.log("Server running on port 3000");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
