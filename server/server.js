@@ -6,9 +6,10 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(cors({
-    origin: "https://applecat112.github.io/huy-portfolio/" // thay bằng URL GitHub Pages của bạn
-}));
+// app.use(cors({
+//     origin: "https://applecat112.github.io/huy-portfolio/" // thay bằng URL GitHub Pages của bạn
+// }));
+app.use(cors());
 app.use(express.json());
 
 console.log(process.env.DB_HOST);
