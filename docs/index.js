@@ -68,7 +68,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const data = await response.json();
 
                 if (data.success) {
-                    alertDiv.textContent = "Gửi thành công!";
+                    alertDiv.textContent = "Gửi thành công! Cảm ơn bạn đã liên hệ.";
                     alertDiv.className = "alert alert-success mt-3";
                     alertDiv.style.display = "block";
 
