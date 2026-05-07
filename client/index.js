@@ -1,16 +1,17 @@
 document.addEventListener("DOMContentLoaded", function () {
 
+    const API_URL = "huy-portfolio-production.up.railway.app"; // thay bằng URL Railway của bạn
+
     const form = document.getElementById("contactForm");
 
-    form.addEventListener("submit", function (e) {
-        e.preventDefault(); // block reload
+    form.addEventListener("submit", async function (e) {  // thêm async
+        e.preventDefault();
 
         let isValid = true;
 
         const name = document.getElementById("name");
         const email = document.getElementById("email");
         const emailError = document.getElementById("emailError");
-
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const message = document.getElementById("message");
 
@@ -25,14 +26,11 @@ document.addEventListener("DOMContentLoaded", function () {
             isValid = false;
         }
 
-        // rmissing
         if (email.value.trim() === "") {
             email.classList.add("is-invalid");
             emailError.innerText = "Vui lòng nhập Email";
             isValid = false;
-        }
-        // wrong format
-        else if (!emailRegex.test(email.value)) {
+        } else if (!emailRegex.test(email.value)) {
             email.classList.add("is-invalid");
             emailError.innerText = "Email không hợp lệ";
             isValid = false;
@@ -45,19 +43,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (isValid) {
             const formData = {
-                name = name.value,
-                email = email.value,
-                message = message.value
-            }
+                name: name.value,      // fix: dùng : thay vì =
+                email: email.value,
+                message: message.value
+            };
+
             try {
-                const response = await fetch("http://localhost:3000/contact", {
+                const response = await fetch(`${API_URL}/contact`, {  // dùng URL Railway
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify(formData)
                 });
+
                 const data = await response.json();
+
                 if (data.success) {
                     alert("Gửi thành công!");
                     form.reset();
