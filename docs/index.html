@@ -220,7 +220,15 @@
                             <div class="mb-3">
                                 <textarea id="message" class="form-control contact-input" rows="6"
                                     placeholder="Your Message"></textarea>
-                                <div class="invalid-feedback">Vui lòng nhập nội dung</div>
+                            </div>
+
+                            <!-- Alert message container -->
+                            <div id="alertMessage" style="display: none;">
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                    <span id="alertText"></span>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                </div>
                             </div>
 
                             <button type="submit" class="btn btn-primary w-100 send-btn">Send Message</button>
@@ -236,6 +244,7 @@
 
     <footer>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script src="index.js"></script>
 </body>
 

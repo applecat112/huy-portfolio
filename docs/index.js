@@ -4,7 +4,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const form = document.getElementById("contactForm");
 
-    form.addEventListener("submit", async function (e) {  // thêm async
+    // Kiểm tra và tạo customAlert nếu chưa có
+    let alertDiv = document.getElementById("customAlert");
+    if (!alertDiv && form) {
+        alertDiv = document.createElement("div");
+        alertDiv.id = "customAlert";
+        alertDiv.style.display = "none";
+        alertDiv.className = "mt-3";
+        form.appendChild(alertDiv);
+    }
+
+    form.addEventListener("submit", async function (e) {
         e.preventDefault();
 
         let isValid = true;
@@ -15,9 +25,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const message = document.getElementById("message");
 
+        // Ẩn alert cũ khi submit mới
+        if (alertDiv) alertDiv.style.display = "none";
+
         // reset lỗi
         [name, email, message].forEach(input => {
-            input.classList.remove("is-invalid");
+            if (input) input.classList.remove("is-invalid");
         });
 
         // validate
@@ -36,20 +49,15 @@ document.addEventListener("DOMContentLoaded", function () {
             isValid = false;
         }
 
-        if (message.value.trim() === "") {
-            message.classList.add("is-invalid");
-            isValid = false;
-        }
-
         if (isValid) {
             const formData = {
-                name: name.value,      // fix: dùng : thay vì =
+                name: name.value,
                 email: email.value,
-                message: message.value
+                message: message.value.trim() === "" ? "Không có nội dung" : message.value  // Nếu trống thì gửi text mặc định
             };
 
             try {
-                const response = await fetch(`${API_URL}/contact`, {  // dùng URL Railway
+                const response = await fetch(`${API_URL}/contact`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
@@ -60,14 +68,33 @@ document.addEventListener("DOMContentLoaded", function () {
                 const data = await response.json();
 
                 if (data.success) {
-                    alert("Gửi thành công!");
+                    alertDiv.textContent = "Gửi thành công!";
+                    alertDiv.className = "alert alert-success mt-3";
+                    alertDiv.style.display = "block";
+
+                    setTimeout(() => {
+                        alertDiv.style.display = "none";
+                    }, 3000);
+
                     form.reset();
                 } else {
-                    alert("Xảy ra lỗi!");
+                    alertDiv.textContent = "Xảy ra lỗi! Vui lòng thử lại sau.";
+                    alertDiv.className = "alert alert-danger mt-3";
+                    alertDiv.style.display = "block";
+
+                    setTimeout(() => {
+                        alertDiv.style.display = "none";
+                    }, 3000);
                 }
             } catch (error) {
                 console.log(error);
-                alert("Không thể kết nối đến server");
+                alertDiv.textContent = "Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.";
+                alertDiv.className = "alert alert-danger mt-3";
+                alertDiv.style.display = "block";
+
+                setTimeout(() => {
+                    alertDiv.style.display = "none";
+                }, 3000);
             }
         }
     });
