@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    const API_URL = "huy-portfolio-production.up.railway.app"; // thay bằng URL Railway của bạn
+    const API_URL = "https://huy-portfolio-production.up.railway.app"; // thay bằng URL Railway của bạn
 
     const form = document.getElementById("contactForm");
 
