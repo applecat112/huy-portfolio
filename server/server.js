@@ -1,11 +1,13 @@
-const express = require("express");
-const cors = require("cors");
+require("dotenv").config();
 
-const contactRoutes = require("./routes/contactRoutes");
+const express = require("express");
+const mysql = require("mysql2");
+const cors = require("cors");
 
 const app = express();
 
-require("dotenv").config();
+app.use(cors());
+app.use(express.json());
 
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
@@ -15,10 +17,40 @@ const db = mysql.createConnection({
     port: process.env.DB_PORT
 });
 
-app.use(cors());
-app.use(express.json());
+db.connect((err) => {
 
-app.use("/contact", contactRoutes);
+    if (err) {
+        console.log(err);
+    } else {
+        console.log("MySQL Connected");
+    }
+});
+
+app.post("/contact", (req, res) => {
+
+    const { name, email, message } = req.body;
+
+    const sql = `
+        INSERT INTO contact_messages(name, email, message)
+        VALUES (?, ?, ?)
+    `;
+
+    db.query(sql, [name, email, message], (err, result) => {
+
+        if (err) {
+
+            console.log(err);
+
+            return res.status(500).json({
+                success: false
+            });
+        }
+
+        res.json({
+            success: true
+        });
+    });
+});
 
 app.listen(3000, () => {
     console.log("Server running on port 3000");
