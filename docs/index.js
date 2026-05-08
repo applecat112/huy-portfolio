@@ -1,18 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    const API_URL = "https://huy-portfolio-production.up.railway.app"; // thay bằng URL Railway của bạn
+    const API_URL = "https://huy-portfolio-production.up.railway.app";
 
     const form = document.getElementById("contactForm");
-
-    // Kiểm tra và tạo customAlert nếu chưa có
-    let alertDiv = document.getElementById("customAlert");
-    if (!alertDiv && form) {
-        alertDiv = document.createElement("div");
-        alertDiv.id = "customAlert";
-        alertDiv.style.display = "none";
-        alertDiv.className = "mt-3";
-        form.appendChild(alertDiv);
-    }
 
     form.addEventListener("submit", async function (e) {
         e.preventDefault();
@@ -24,9 +14,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const emailError = document.getElementById("emailError");
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const message = document.getElementById("message");
-
-        // Ẩn alert cũ khi submit mới
-        if (alertDiv) alertDiv.style.display = "none";
 
         // reset lỗi
         [name, email, message].forEach(input => {
@@ -49,53 +36,105 @@ document.addEventListener("DOMContentLoaded", function () {
             isValid = false;
         }
 
-        if (isValid) {
-            const formData = {
-                name: name.value,
-                email: email.value,
-                message: message.value.trim() === "" ? "Không có nội dung" : message.value  // Nếu trống thì gửi text mặc định
-            };
+        // Nếu validate không thành công
+        if (!isValid) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Thông tin chưa đầy đủ',
+                text: 'Vui lòng điền đầy đủ thông tin trước khi gửi.',
+                confirmButtonColor: '#5b4fcf',
+                confirmButtonText: 'Đã hiểu',
+                background: '#fff',
+                iconColor: '#ff9800'
+            });
+            return;
+        }
 
-            try {
-                const response = await fetch(`${API_URL}/contact`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
+        // Hiển thị loading khi đang gửi
+        Swal.fire({
+            title: 'Đang gửi...',
+            text: 'Vui lòng chờ trong giây lát',
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const formData = {
+            name: name.value,
+            email: email.value,
+            message: message.value.trim() === "" ? "Không có nội dung" : message.value
+        };
+
+        try {
+            const response = await fetch(`${API_URL}/contact`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            // Đóng loading
+            Swal.close();
+
+            if (data.success) {
+                // Popup thành công
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Gửi thành công!',
+                    html: 'Cảm ơn bạn <strong>' + name.value + '</strong> đã liên hệ.<br>Tôi sẽ phản hồi sớm nhất có thể.',
+                    confirmButtonColor: '#5b4fcf',
+                    confirmButtonText: 'OK',
+                    background: '#fff',
+                    iconColor: '#4CAF50',
+                    timer: 4000,
+                    timerProgressBar: true,
+                    showClass: {
+                        popup: 'animate__animated animate__fadeInDown'
                     },
-                    body: JSON.stringify(formData)
+                    hideClass: {
+                        popup: 'animate__animated animate__fadeOutUp'
+                    }
                 });
 
-                const data = await response.json();
+                // Reset form sau khi gửi thành công
+                form.reset();
 
-                if (data.success) {
-                    alertDiv.textContent = "Gửi thành công! Cảm ơn bạn đã liên hệ.";
-                    alertDiv.className = "alert alert-success mt-3";
-                    alertDiv.style.display = "block";
-
-                    setTimeout(() => {
-                        alertDiv.style.display = "none";
-                    }, 3000);
-
-                    form.reset();
-                } else {
-                    alertDiv.textContent = "Xảy ra lỗi! Vui lòng thử lại sau.";
-                    alertDiv.className = "alert alert-danger mt-3";
-                    alertDiv.style.display = "block";
-
-                    setTimeout(() => {
-                        alertDiv.style.display = "none";
-                    }, 3000);
-                }
-            } catch (error) {
-                console.log(error);
-                alertDiv.textContent = "Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.";
-                alertDiv.className = "alert alert-danger mt-3";
-                alertDiv.style.display = "block";
-
-                setTimeout(() => {
-                    alertDiv.style.display = "none";
-                }, 3000);
+                // Xóa class is-invalid nếu có
+                [name, email, message].forEach(input => {
+                    if (input) input.classList.remove("is-invalid");
+                });
+            } else {
+                // Popup lỗi từ server
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gửi thất bại!',
+                    text: 'Xảy ra lỗi từ server. Vui lòng thử lại sau.',
+                    confirmButtonColor: '#5b4fcf',
+                    confirmButtonText: 'Thử lại',
+                    background: '#fff',
+                    iconColor: '#f44336'
+                });
             }
+        } catch (error) {
+            console.log(error);
+            Swal.close();
+
+            // Popup lỗi kết nối
+            Swal.fire({
+                icon: 'error',
+                title: 'Lỗi kết nối!',
+                html: 'Không thể kết nối đến server.<br>Vui lòng kiểm tra kết nối mạng và thử lại.',
+                confirmButtonColor: '#5b4fcf',
+                confirmButtonText: 'Đã hiểu',
+                background: '#fff',
+                iconColor: '#f44336'
+            });
         }
     });
 });
