@@ -6,30 +6,34 @@ const cors = require("cors");
 
 const app = express();
 
-// app.use(cors({
-//     origin: "https://applecat112.github.io/huy-portfolio/" // thay bằng URL GitHub Pages của bạn
-// }));
 app.use(cors());
 app.use(express.json());
 
-console.log(process.env.DB_HOST);
-console.log(process.env.DB_PORT);
-
-const db = mysql.createConnection({
+const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     port: process.env.DB_PORT,
-    connectTimeout: 60000,
-    ssl: { rejectUnauthorized: false }
+
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
+
+    enableKeepAlive: true,
+    keepAliveInitialDelay: 0,
+
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
-db.connect((err) => {
+db.getConnection((err, connection) => {
     if (err) {
-        console.log(err);
+        console.log("MySQL Error:", err);
     } else {
         console.log("MySQL Connected");
+        connection.release();
     }
 });
 
@@ -50,8 +54,10 @@ app.post("/contact", (req, res) => {
     `;
 
     db.query(sql, [name, email, message], (err, result) => {
+
         if (err) {
             console.log(err);
+
             return res.status(500).json({
                 success: false,
                 error: "Lỗi server, vui lòng thử lại"
