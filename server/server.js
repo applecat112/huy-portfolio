@@ -27,7 +27,7 @@ const db = mysql.createPool({
         rejectUnauthorized: false
     }
 });
-
+// DB connection 
 db.getConnection((err, connection) => {
     if (err) {
         console.log("MySQL Error:", err);
